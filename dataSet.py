@@ -22,17 +22,17 @@ def getStockPrices():
 	j = 0
 	for index, row in feature_data.iterrows():
 		#if row.ticker == row1.ticker:
-			adj_close = row.adj_close
-			adj_volume = row.adj_volume
-			newRow = np.array([adj_close, adj_volume])
-			#print newRow
-			data_array = np.vstack((data_array, newRow))
-			ticker_id = np.vstack((ticker_id, i))
-	i += 1
+		adj_close = row.adj_close
+		adj_volume = row.adj_volume
+		newRow = np.array([adj_close, adj_volume])
+		#print newRow
+		data_array = np.vstack((data_array, newRow))
+		ticker_id = np.vstack((ticker_id, i))
+		i += 1
 
 	ticker_id = ticker_id.astype(np.float64)
 	data_array = np.append(data_array, ticker_id, 1)
-	#print (data_array[1:])
+	print (data_array[1:])
 	#print ticker_id
 	np.savetxt("foo.txt", data_array)
 #def get_y_value():
