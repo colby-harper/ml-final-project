@@ -5,7 +5,6 @@ import math
 def getData(link):
 	data = pd.io.parsers.read_csv(
 		filepath_or_buffer=link,
-		skiprows = 1,
 		header=None,
 		sep=' ')
 	data.dropna(how='all', inplace=True)
