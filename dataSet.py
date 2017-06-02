@@ -17,9 +17,9 @@ def getStockPrices():
 		if row.adj_open <= 5:
 			ticker_list.append(str(row.ticker))
 
-	feature_data = quandl.get_table('WIKI/PRICES', ticker = ticker_list, qopts = { 'columns': ['ticker', 'adj_close', 'adj_volume', 'date'] }, date = { 'gte': initDate.strftime('%Y-%m-%d'), 'lte': endDate.strftime('%Y-%m-%d') }, paginate=True)
+	feature_data = quandl.get_table('WIKI/PRICES', ticker = ticker_list, qopts = { 'columns': ['ticker', 'adj_close', 'adj_volume', 'adj_high', 'adj_low', 'date'] }, date = { 'gte': initDate.strftime('%Y-%m-%d'), 'lte': endDate.strftime('%Y-%m-%d') }, paginate=True)
 
-	data_array = np.array([0,0])
+	data_array = np.array([0,0,0,0])
 	ticker_id = np.array([0])
 	name = ''
 	j = 0
@@ -30,7 +30,9 @@ def getStockPrices():
 			j += 1
 		adj_close = row.adj_close
 		adj_volume = row.adj_volume
-		newRow = np.array([adj_close, adj_volume])
+		adj_high = row.adj_high
+		adj_low = row.adj_low
+		newRow = np.array([adj_close, adj_volume, adj_high, adj_low])
 		data_array = np.vstack((data_array, newRow))
 		ticker_id = np.vstack((ticker_id, j))
 
