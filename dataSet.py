@@ -8,10 +8,16 @@ quandl.ApiConfig.api_key = "zCnMsnBTZogmUryumZCf"
 
 def getStockPrices():
 	
-	initDate = date(2016,11,25)
+	initDate = date(2015,11,25)
 	endDate = date(2016,12,31)
 
-	feature_data = quandl.get_table('WIKI/PRICES', ticker = ['CRIS', 'VVUS', 'CHK'], qopts = { 'columns': ['ticker', 'adj_close', 'adj_volume', 'date'] }, date = { 'gte': initDate.strftime('%Y-%m-%d'), 'lte': endDate.strftime('%Y-%m-%d') })
+	ticker_list = []
+	all_stocks = quandl.get_table('WIKI/PRICES', qopts = {'columns': ['ticker', 'adj_open']}, date = {'gte': initDate.strftime('%Y-%m-%d'), 'lte': initDate.strftime('%Y-%m-%d')})
+	for index, row in all_stocks.iterrows():	
+		if row.adj_open <= 5:
+			ticker_list.append(str(row.ticker))
+
+	feature_data = quandl.get_table('WIKI/PRICES', ticker = ticker_list, qopts = { 'columns': ['ticker', 'adj_close', 'adj_volume', 'date'] }, date = { 'gte': initDate.strftime('%Y-%m-%d'), 'lte': endDate.strftime('%Y-%m-%d') }, paginate=True)
 
 	data_array = np.array([0,0])
 	ticker_id = np.array([0])
