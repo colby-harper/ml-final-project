@@ -39,9 +39,13 @@ if __name__ == "__main__":
 		
 		#Calculate volume percent difference - 4th column
 		prev_vol = data_array[i-1][1]
-		vol_diff = data_array[i][1] - prev_vol
-		data_array[i][3] = (vol_diff)/(prev_vol)
+		if (prev_vol == 0):
+			data_array[i][3] = 1000
+		else:
+			vol_diff = data_array[i][1] - prev_vol
+			data_array[i][3] = (vol_diff)/(prev_vol)
 
 		#Calculate percent change from high
 
+	data_array = np.delete(data_array,7,1)
 	print (data_array)
