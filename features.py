@@ -34,11 +34,11 @@ if __name__ == "__main__":
 		
 		#Calculate volume percent difference - 2nd column
 		prev_vol = data_array[i-1][1]
-		if (prev_vol == 0):
-			features[i][1] = 1000
-		else:
-			vol_diff = data_array[i][1] - prev_vol
-			features[i][1] = (vol_diff)/(prev_vol)
+		#if (prev_vol == 0):
+		#	features[i][1] = 1000
+		#else:
+		vol_diff = data_array[i][1] - prev_vol
+		features[i][1] = (vol_diff)/(prev_vol)
 
 		#Calculate percent change from high
 		prev_high = data_array[i][2]
