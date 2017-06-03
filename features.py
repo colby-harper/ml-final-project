@@ -24,7 +24,7 @@ if __name__ == "__main__":
 	for i in range(0,data_array.shape[0]):
 		#Check if in a new ticker group (skip first element if so)
 		if (data_array[i][4] != j):
-			j += 1
+			j = data_array[i][4]
 			i += 1
 		#Calculate price percent difference - 1st column
 		prev_price = data_array[i-1][0]
