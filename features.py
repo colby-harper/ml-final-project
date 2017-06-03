@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+#np.set_printoptions(threshold=np.nan)
 
 def getData(link):
 	data = pd.io.parsers.read_csv(
@@ -21,6 +22,7 @@ if __name__ == "__main__":
 	features = np.zeros((data_array.shape[0],6))
 
 	j = 0
+	buy_count= hold_count= sell_count = 0
 	for i in range(0,(data_array.shape[0]-2)):
 		#Check if in a new ticker group (skip first element if so)
 		if (data_array[i+2][5] != j):
@@ -56,15 +58,22 @@ if __name__ == "__main__":
 		trade_price = data_array[i+1][4]
 		percent_change = ((future_price - trade_price)/trade_price)*100
 		stock_category = None
+		
 		if percent_change > 5:
 			stock_category = 0
-		elif percent_change < 5:
+			buy_count+=1
+		elif percent_change < -5:
 			stock_category = 1
+			sell_count+=1
 		else:
 			stock_category = 2
+			hold_count +=1
 		features[i][5] = stock_category
 	#get rid of zeros
 	features = np.delete(features, 0, axis=0)
 	features = np.delete(features, -1, axis=0)
 	features = np.delete(features, -1, axis=0)
+	# print "# of buys: {}".format(buy_count)
+	# print "# of sells: {}".format(sell_count)
+	# print "# of holds: {}".format(hold_count)
 	print (features)
