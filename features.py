@@ -39,13 +39,13 @@ def analysis(df):
 
 	print(y_test)
 	print(predictions)
-	y_test = preprocessing.normalize(y_test)
-	predictions = preprocessing.normalize(predictions)
+	#y_test = preprocessing.normalize(y_test)
+	#predictions = preprocessing.normalize(predictions)
 	#print (y_train)
 
 	rmse = calculateRMSE(y_test,predictions,y_test.shape[0])
-	print(y_test)
-	print(predictions)
+	#print(y_test)
+	#print(predictions)
 	#print(predictions)
 	print(rmse)
 
@@ -94,11 +94,14 @@ if __name__ == "__main__":
 		vola_diff = prev_high - prev_low
 		features[i][4] = (vola_diff)/curr_price
 
-		#Calculate the future percent change - 6th column
+		#future price - 6th clumn
+		features[i][5] = data_array[i+2][4]
+
+		#Calculate the future percent change - 7th column
 		future_price = data_array[i+2][4]
 		trade_price = data_array[i+1][4]
 		percent_change = ((future_price - trade_price)/trade_price)*100
-		features[i][5] = percent_change
+		#features[i][6] = percent_change
 		stock_category = None
 		
 		if percent_change > 5:
