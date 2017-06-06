@@ -5,6 +5,16 @@ from sklearn.linear_model import LinearRegression
 import math
 #np.set_printoptions(threshold=np.nan)
 
+def categorize(percent_change):
+	stock_category = None
+	if percent_change >= .1:
+		stock_category = 0
+	elif percent_change <= -.1:
+		stock_category = 1
+	else:
+		stock_category = 2
+	return stock_category
+
 def getData(link):
 	data = pd.io.parsers.read_csv(
 		filepath_or_buffer=link,
@@ -17,22 +27,41 @@ def getData(link):
 def calculateRMSE(yExpected , yActual , size):
 	mse = 0
 	for i in range(size):
-		diff = yActual[0][i] - yExpected[0][i]
+		diff = yActual[i] - yExpected[i]
 		mse += math.pow(diff,2)
 	rmse = math.sqrt(mse/size)
 	return rmse
 
 def analysis(df):
+	#print df
 	X = np.array(df[:,:-2])
-	y = np.array(df[:,-2])
-	#y = preprocessing.scale(y)
+	y = np.array(df[:,-1])
 	X = preprocessing.scale(X)
+	cat = np.matrix(df[:,-2])
+	cat = np.swapaxes(cat,0,1)
+	X = np.append(X, cat, 1)
+	#print X
 
 	X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=.2)
+
+	train_cat = np.array(X_train[:,-1])
+	X_train =np.delete(X_train, -1, axis=1)
+	test_cat = np.array(X_test[:,-1])
+	X_test = np.delete(X_test, -1, axis=1)
+	# print X_test
+	# print test_cat
 
 	clf = svm.SVR(kernel = "poly",degree = 3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
+	count = 0
+	for i in range(len(predictions)-1):
+		percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
+		predicted_cat = categorize(percent_change)
+		if predicted_cat != test_cat[i+1]:
+			#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
+			count+=1
+	print count
 
 	#score = clf.score(X_test,y_test)
 	#print (score)
@@ -95,25 +124,16 @@ if __name__ == "__main__":
 		features[i][4] = (vola_diff)/curr_price
 
 		#future price - 6th clumn
-		features[i][5] = data_array[i+2][4]
+		features[i][6] = data_array[i+2][4]
 
 		#Calculate the future percent change - 7th column
 		future_price = data_array[i+2][4]
 		trade_price = data_array[i+1][4]
 		percent_change = ((future_price - trade_price)/trade_price)*100
 		#features[i][6] = percent_change
-		stock_category = None
-		
-		if percent_change > 5:
-			stock_category = 0
-			buy_count+=1
-		elif percent_change < -5:
-			stock_category = 1
-			sell_count+=1
-		else:
-			stock_category = 2
-			hold_count +=1
-		features[i][6] = stock_category
+		stock_category = categorize(percent_change)
+	
+		features[i][5] = stock_category
 	#get rid of zeros
 	features = np.delete(features, 0, axis=0)
 	features = np.delete(features, -1, axis=0)
