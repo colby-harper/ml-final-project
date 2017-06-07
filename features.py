@@ -38,8 +38,16 @@ def analysis(df):
 	#print df
 	X = np.array(df[:,:-2])
 	y = np.array(df[:,-1])
+	
+# Re-calculate actual category to test against
+	y_fut = y[-3]
+	y_trade = y[-4]
+	y_per = ((y_fut - y_trade)/y_trade)*100
+	y_cat = categorize(y_per)
+
 	X = preprocessing.scale(X)
 	cat = np.array(df[:,-2])
+
 	#cat = np.swapaxes(cat,0,1)
 	#X = np.append(X, cat, 1)
 	#print X
@@ -73,13 +81,14 @@ def analysis(df):
 	X_test = X[-1,:]
 	y_train = y[:-1]
 	y_test = y[-1]
-	train_cat = cat[:-1]
-	test_cat = cat[-1]
+	train_cat = cat[:-4]
+	test_cat = cat[-4]
 
 	#clf = svm.SVR(kernel = "poly",degree = 3)
 	clf = tree.DecisionTreeRegressor(max_depth=3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
+	# print (predictions[0])
 	count = 0
 	# for i in range(len(predictions)-1):
 	# 	percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
@@ -88,14 +97,14 @@ def analysis(df):
 	# 		#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
 	# 		count+=1
 
-	percent_change = ((predictions[0] - y_train[-1])/y_train[-1])*100
+	percent_change = ((predictions[0] - y_train[-3])/y_train[-3])*100
 	predicted_cat = categorize(percent_change)
-	if predicted_cat != test_cat:
-		print "Wrong"
+	if predicted_cat != y_cat:
+		print ("Wrong")
 	else:
 		count += 1
-		print "Right"
-	print count
+		print ("Right")
+	# print (count)
 
 	#score = clf.score(X_test,y_test)
 	#print (score)
@@ -114,7 +123,7 @@ def analysis(df):
 
 	#print("X: {},{}".format(X.shape[0],X.shape[1]))
 	#print("y: {}".format(y.shape[0]))#,y.shape[1]))
-	return count
+	return predictions[0],count
 
 if __name__ == "__main__":
 
@@ -184,20 +193,49 @@ if __name__ == "__main__":
 	features = np.delete(features, -1, axis=0)
 	features = np.delete(features, -1, axis=0)
 
-	print "buy count: {}".format(BUY)
-	print "sell count: {}".format(SELL)
-	print "hold count: {}".format(HOLD)
+	# print "buy count: {}".format(BUY)
+	# print "sell count: {}".format(SELL)
+	# print "hold count: {}".format(HOLD)
 
 	increment = 274
-	Rcount = 0
+	Rcount_total = 0
+	days = np.arange(20)
+	accuracy = np.zeros(193)
+	acc = 0
+	predictions_array = np.array(np.zeros(20))
 	for i in range(193):
+		Rcount = 0
 		testing = features[(i*increment):increment*(i+1)]
-		for i in range(20):
-			 Rcount += analysis(testing[i:50+i])
+		stock_prediction = np.zeros(20)
+		actual_output = testing[48:68,6]
+		for j in range(20):
+			 stock_prediction[j],count = analysis(testing[j:50+j])
+			 Rcount += count
+			 Rcount_total += count
+			 # actual_output[i] = testing[i:50+i][6]
+		predictions_array = np.vstack((predictions_array,stock_prediction))
+		accuracy[i] = (Rcount/float(20))*100
+		#print ("{}%".format(accuracy))
+		plt.figure()
+		#plt.subplot(4,4,i+1)
+		plt.plot(days, stock_prediction, 'b', label='predicted')
+		plt.plot(days, actual_output, 'r', label="actual")
+		plt.legend(loc='upper left')
+		plt.xticks(np.arange(0,21,1))
+		plt.title("Stock {}".format(i))
+		plt.xlabel("Day")
+		plt.ylabel("Price ($)")
+	print ("{}".format(accuracy))
+	acc = (Rcount_total/float(193*20))*100
+	print ("{}".format(acc))
+	plt.show()
+
+
+	#predictions_array = np.delete(predictions_array, 0, axis=0)
+	#print (predictions_array)	 
 		# Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
 
-	accuracy = (Rcount/float(193*20))*100
-	print "{}%".format(accuracy)
+	
 	# print "# of buys: {}".format(buy_count)
 	# print "# of sells: {}".format(sell_count)
 	# print "# of holds: {}".format(hold_count)
