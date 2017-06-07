@@ -8,13 +8,14 @@ import math
 
 def categorize(percent_change):
 	stock_category = None
-	if percent_change >= .1:
+	if percent_change >= 5:
 		stock_category = 0
-	elif percent_change <= -.1:
+	elif percent_change <= -5:
 		stock_category = 1
 	else:
 		stock_category = 2
 	return stock_category
+
 
 def getData(link):
 	data = pd.io.parsers.read_csv(
@@ -38,9 +39,9 @@ def analysis(df):
 	X = np.array(df[:,:-2])
 	y = np.array(df[:,-1])
 	X = preprocessing.scale(X)
-	cat = np.matrix(df[:,-2])
-	cat = np.swapaxes(cat,0,1)
-	X = np.append(X, cat, 1)
+	cat = np.array(df[:,-2])
+	#cat = np.swapaxes(cat,0,1)
+	#X = np.append(X, cat, 1)
 	#print X
 	test_size = int(.2 * X.shape[0])
 	#train_size = X.shape[0] - test_size
@@ -60,48 +61,52 @@ def analysis(df):
 	#print(X_train)
 	#print(X_test)
 
+	#X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=.1)
 
-	# X_train1, X_test1, y_train1, y_test1 = cross_validation.train_test_split(X,y,test_size=.2)
-	# print(X_train1.shape[0])
-	# print(X_test1.shape[0])
+	#train_cat = np.array(X_train[:,-1])
+	#X_train =np.delete(X_train, -1, axis=1)
+	#test_cat = np.array(X_test[:,-1])
+	#X_test = np.delete(X_test, -1, axis=1)
+	# print X_test
+	# print test_cat
+	X_train = X[:-1,:]
+	X_test = X[-1,:]
+	y_train = y[:-1]
+	y_test = y[-1]
+	train_cat = cat[:-1]
+	test_cat = cat[-1]
 
-	train_cat = np.array(X_train[:,-1])
-	X_train =np.delete(X_train, -1, axis=1)
-	test_cat = np.array(X_test[:,-1])
-	X_test = np.delete(X_test, -1, axis=1)
-	#print (X_test)
-	#print (test_cat)
-
-	clf = svm.SVR(kernel = "poly",degree = 3)
+	#clf = svm.SVR(kernel = "poly",degree = 3)
+	clf = tree.DecisionTreeRegressor(max_depth=3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
 	count = 0
-		
-	days = np.arange(0,predictions.shape[0])
-	# print (days)
+	# for i in range(len(predictions)-1):
+	# 	percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
+	# 	predicted_cat = categorize(percent_change)
+	# 	if predicted_cat != test_cat[i+1]:
+	# 		#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
+	# 		count+=1
 
-	plt.plot(days, predictions, 'r', days, y_test, 'b')
-	plt.ylabel('some numbers')
-	plt.show()
-
-	for i in range(len(predictions)-1):
-		percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
-		predicted_cat = categorize(percent_change)
-		#print ("prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1]))
-		if predicted_cat != test_cat[i+1]:
-			count+=1
-	#print (count)
+	percent_change = ((predictions[0] - y_train[-1])/y_train[-1])*100
+	predicted_cat = categorize(percent_change)
+	if predicted_cat != test_cat:
+		print "Wrong"
+	else:
+		count += 1
+		print "Right"
+	print count
 
 	#score = clf.score(X_test,y_test)
 	#print (score)
- 
-	#print(y_test)
-	#print(predictions)
+	#print y_train
+	# print(y_test)
+	# print(predictions)
 	#y_test = preprocessing.normalize(y_test)
 	#predictions = preprocessing.normalize(predictions)
 	#print (y_train)
 
-	rmse = calculateRMSE(y_test,predictions,y_test.shape[0])
+	#rmse = calculateRMSE(y_test,predictions,y_test.shape[0])
 	#print(y_test)
 	#print(predictions)
 	#print(predictions)
@@ -109,9 +114,13 @@ def analysis(df):
 
 	#print("X: {},{}".format(X.shape[0],X.shape[1]))
 	#print("y: {}".format(y.shape[0]))#,y.shape[1]))
+	return count
 
 if __name__ == "__main__":
 
+	BUY = 0
+	SELL = 0
+	HOLD = 0
 	link = 'foo.txt'
 	df = getData(link)
 	#print (df)
@@ -162,17 +171,33 @@ if __name__ == "__main__":
 		percent_change = ((future_price - trade_price)/trade_price)*100
 		#features[i][6] = percent_change
 		stock_category = categorize(percent_change)
+		if stock_category == 0:
+			BUY+=1
+		elif stock_category == 1:
+			SELL+=1
+		else:
+			HOLD+=1
 	
 		features[i][5] = stock_category
 	#get rid of zeros
 	features = np.delete(features, 0, axis=0)
 	features = np.delete(features, -1, axis=0)
 	features = np.delete(features, -1, axis=0)
-	features = np.delete(features, -1, axis=0)
 
-	increment = 273
-	#print (features[increment:increment*2])
-	analysis(features[:increment])
+	print "buy count: {}".format(BUY)
+	print "sell count: {}".format(SELL)
+	print "hold count: {}".format(HOLD)
+
+	increment = 274
+	Rcount = 0
+	for i in range(193):
+		testing = features[(i*increment):increment*(i+1)]
+		for i in range(20):
+			 Rcount += analysis(testing[i:50+i])
+		# Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
+
+	accuracy = (Rcount/float(193*20))*100
+	print "{}%".format(accuracy)
 	# print "# of buys: {}".format(buy_count)
 	# print "# of sells: {}".format(sell_count)
 	# print "# of holds: {}".format(hold_count)
