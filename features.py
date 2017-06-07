@@ -62,7 +62,7 @@ def analysis(df):
 	clf = tree.DecisionTreeRegressor(max_depth=3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
-	# count = 0
+	count = 0
 	# for i in range(len(predictions)-1):
 	# 	percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
 	# 	predicted_cat = categorize(percent_change)
@@ -71,13 +71,13 @@ def analysis(df):
 	# 		count+=1
 
 	percent_change = ((predictions[0] - y_train[-1])/y_train[-1])*100
-	# predicted_cat = categorize(percent_change)
-	# if predicted_cat != test_cat:
-		# print "Wrong"
-	# else:
-		# count += 1
-		# print "Right"
-	#print count
+	predicted_cat = categorize(percent_change)
+	if predicted_cat != test_cat:
+		print "Wrong"
+	else:
+		count += 1
+		print "Right"
+	print count
 
 	#score = clf.score(X_test,y_test)
 	#print (score)
@@ -96,7 +96,7 @@ def analysis(df):
 
 	#print("X: {},{}".format(X.shape[0],X.shape[1]))
 	#print("y: {}".format(y.shape[0]))#,y.shape[1]))
-	# return count
+	return count
 
 if __name__ == "__main__":
 
@@ -172,9 +172,9 @@ if __name__ == "__main__":
 	Rcount = 0
 	for i in range(193):
 		testing = features[(i*increment):increment*(i+1)]
-		# for i in range(20):
-			# Rcount += analysis(testing[i:50+i])
-		#Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
+		for i in range(20):
+			 Rcount += analysis(testing[i:50+i])
+		Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
 
 	accuracy = (Rcount/float(193*20))*100
 	print "{}%".format(accuracy)
