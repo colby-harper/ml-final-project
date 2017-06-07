@@ -40,8 +40,8 @@ def analysis(df):
 	y = np.array(df[:,-1])
 	
 # Re-calculate actual category to test against
-	y_fut = y[-3]
-	y_trade = y[-4]
+	y_fut = y[-2]
+	y_trade = y[-3]
 	y_per = ((y_fut - y_trade)/y_trade)*100
 	y_cat = categorize(y_per)
 
@@ -73,7 +73,7 @@ def analysis(df):
 
 	#train_cat = np.array(X_train[:,-1])
 	#X_train =np.delete(X_train, -1, axis=1)
-	#test_cat = np.array(X_test[:,-1])
+	test_cat = np.array(X_test[:,-1])
 	#X_test = np.delete(X_test, -1, axis=1)
 	# print X_test
 	# print test_cat
@@ -97,7 +97,7 @@ def analysis(df):
 	# 		#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
 	# 		count+=1
 
-	percent_change = ((predictions[0] - y_train[-3])/y_train[-3])*100
+	percent_change = ((predictions[0] - y_train[-2])/y_train[-2])*100
 	predicted_cat = categorize(percent_change)
 	if predicted_cat != y_cat:
 		print ("Wrong")
@@ -137,41 +137,47 @@ if __name__ == "__main__":
 	#array for new features
 	features = np.zeros((data_array.shape[0],7))
 
-	j = 0
+	# the first ticker number is 3
+	j = 3
 	buy_count= hold_count= sell_count = 0
-	for i in range(0,(data_array.shape[0]-2)):
+	# starts at 1, because we need to use data from previous date for each row, (therefore cant start at 0)
+	i = 1
+	# we need to loop for the number of data points we will be using which is the size of the data_array - 3 rows for each stock (first 1 and last 2)
+	# this gives us a range from 0 to size - 193*3
+	for k in range(0,(data_array.shape[0])-(193*3)):
 		#Check if in a new ticker group (skip first element if so)
 		if (data_array[i+2][5] != j):
 			j = data_array[i+2][5]
 			i += 3
+		#print (i)
 		#Calculate price percent difference - 1st column
 		prev_price = data_array[i-1][0]
 		curr_price = data_array[i][0]
 		price_diff = curr_price - prev_price
-		features[i][0] = curr_price#(price_diff)/(prev_price)
+		features[k][0] = curr_price#(price_diff)/(prev_price)
 		
 		#Calculate volume percent difference - 2nd column
 		#prev_vol = data_array[i-1][1]
 		#vol_diff = data_array[i][1] - prev_vol
-		features[i][1] = data_array[i][1]# (vol_diff)/(prev_vol)
+		features[k][1] = data_array[i][1]# (vol_diff)/(prev_vol)
 
 		
 		#Calculate percent change from high - 3rd column
 		prev_high = data_array[i][2]
 		price_diff_high = curr_price - prev_high
-		features[i][2] = (price_diff_high)/prev_high
+		features[k][2] = (price_diff_high)/prev_high
 
 		#Calculate percent change from low - 4th column
 		prev_low = data_array[i][3]
 		price_diff_low = curr_price - prev_low
-		features[i][3] = (price_diff_low)/prev_low
+		features[k][3] = (price_diff_low)/prev_low
 
 		#Calculate volatility - 5th column
 		vola_diff = prev_high - prev_low
-		features[i][4] = (vola_diff)/curr_price
+		features[k][4] = (vola_diff)/curr_price
 
 		#future price - 6th clumn
-		features[i][6] = data_array[i+2][4]
+		features[k][6] = data_array[i+2][4]
 
 		#Calculate the future percent change - 7th column
 		future_price = data_array[i+2][4]
@@ -187,7 +193,11 @@ if __name__ == "__main__":
 		else:
 			HOLD+=1
 	
-		features[i][5] = stock_category
+		features[k][5] = stock_category
+		i+=1
+	
+	print (features)
+
 	#get rid of zeros
 	features = np.delete(features, 0, axis=0)
 	features = np.delete(features, -1, axis=0)
