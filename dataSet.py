@@ -61,6 +61,7 @@ def getStockPrices():
 		ticker_id = np.vstack((ticker_id, j))
 		i +=1
 
+	print (max_ticker_count)
 	ticker_id = ticker_id.astype(np.float64)
 	data_array = np.append(data_array, ticker_id, 1)
 

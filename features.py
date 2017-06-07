@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn import preprocessing, cross_validation, svm, tree
 from sklearn.linear_model import LinearRegression
 import math
@@ -41,33 +42,61 @@ def analysis(df):
 	cat = np.swapaxes(cat,0,1)
 	X = np.append(X, cat, 1)
 	#print X
+	test_size = int(.2 * X.shape[0])
+	#train_size = X.shape[0] - test_size
+	# print (test_size)
+	X_train = X[:-(test_size),:]
+	X_test = X[-(test_size):,:]
+	
+	y_train = y[:-(test_size)]
+	y_test = y[-(test_size):]
+	# print (y)
+	# print(X_train.shape[0])
+	# print(X_test.shape[0])
 
-	X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=.2)
+	# print(y_train.shape[0])
+	# print(y_test.shape[0])
+	# #print(X)
+	#print(X_train)
+	#print(X_test)
+
+
+	# X_train1, X_test1, y_train1, y_test1 = cross_validation.train_test_split(X,y,test_size=.2)
+	# print(X_train1.shape[0])
+	# print(X_test1.shape[0])
 
 	train_cat = np.array(X_train[:,-1])
 	X_train =np.delete(X_train, -1, axis=1)
 	test_cat = np.array(X_test[:,-1])
 	X_test = np.delete(X_test, -1, axis=1)
-	# print X_test
-	# print test_cat
+	#print (X_test)
+	#print (test_cat)
 
 	clf = svm.SVR(kernel = "poly",degree = 3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
 	count = 0
+		
+	days = np.arange(0,predictions.shape[0])
+	# print (days)
+
+	plt.plot(days, predictions, 'r', days, y_test, 'b')
+	plt.ylabel('some numbers')
+	plt.show()
+
 	for i in range(len(predictions)-1):
 		percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
 		predicted_cat = categorize(percent_change)
+		#print ("prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1]))
 		if predicted_cat != test_cat[i+1]:
-			#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
 			count+=1
-	print count
+	#print (count)
 
 	#score = clf.score(X_test,y_test)
 	#print (score)
-
-	print(y_test)
-	print(predictions)
+ 
+	#print(y_test)
+	#print(predictions)
 	#y_test = preprocessing.normalize(y_test)
 	#predictions = preprocessing.normalize(predictions)
 	#print (y_train)
@@ -76,7 +105,7 @@ def analysis(df):
 	#print(y_test)
 	#print(predictions)
 	#print(predictions)
-	print(rmse)
+	#print(rmse)
 
 	#print("X: {},{}".format(X.shape[0],X.shape[1]))
 	#print("y: {}".format(y.shape[0]))#,y.shape[1]))
@@ -129,6 +158,7 @@ if __name__ == "__main__":
 		#Calculate the future percent change - 7th column
 		future_price = data_array[i+2][4]
 		trade_price = data_array[i+1][4]
+		#print ("future: {} - trade: {}".format(future_price,trade_price))
 		percent_change = ((future_price - trade_price)/trade_price)*100
 		#features[i][6] = percent_change
 		stock_category = categorize(percent_change)
@@ -138,8 +168,10 @@ if __name__ == "__main__":
 	features = np.delete(features, 0, axis=0)
 	features = np.delete(features, -1, axis=0)
 	features = np.delete(features, -1, axis=0)
+	features = np.delete(features, -1, axis=0)
 
-	increment = 274
+	increment = 273
+	#print (features[increment:increment*2])
 	analysis(features[:increment])
 	# print "# of buys: {}".format(buy_count)
 	# print "# of sells: {}".format(sell_count)
