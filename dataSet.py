@@ -11,6 +11,7 @@ def getStockPrices():
 	initDate = date(2015,11,25)
 	endDate = date(2016,12,31)
 
+
 	ticker_list = []
 	all_stocks = quandl.get_table('WIKI/PRICES', qopts = {'columns': ['ticker', 'adj_open']}, date = {'gte': initDate.strftime('%Y-%m-%d'), 'lte': initDate.strftime('%Y-%m-%d')})
 	for index, row in all_stocks.iterrows():	
@@ -25,6 +26,7 @@ def getStockPrices():
 	j = 0
 	i = 0
 	remove = set()
+	print ("Set: {}".format(remove))
 	ticker_count = 0
 	max_ticker_count = 0
 	max_tick_index = set()
@@ -61,18 +63,26 @@ def getStockPrices():
 		ticker_id = np.vstack((ticker_id, j))
 		i +=1
 
+	print (max_ticker_count)
 	ticker_id = ticker_id.astype(np.float64)
 	data_array = np.append(data_array, ticker_id, 1)
 
+
 	#loop through the array.  If a row's ticker id is in the set, delete that row.
 	i = 0
+	z = 1
+	y = 0
+	print (len(remove))
 	while i < len(data_array):
 		if int(data_array[i,-1]) in remove:
+			print ("index: {} - tick: {}".format(i,data_array[i,-1]))
 			data_array = np.delete(data_array, (i), axis=0)
 		else:
 			i+=1
-	#print(data_array.shape[0])
-	np.savetxt("foo.txt", data_array[1:])
+	# #print(data_array.shape[0])
+	# print (z)
+	np.savetxt("foo.txt", data_array)
+
 	
 if __name__ == "__main__":
 
