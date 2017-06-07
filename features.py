@@ -172,8 +172,8 @@ if __name__ == "__main__":
 	Rcount = 0
 	for i in range(193):
 		testing = features[(i*increment):increment*(i+1)]
-		for i in range(20):
-			 Rcount += analysis(testing[i:50+i])
+		for j in range(20):
+			 Rcount += analysis(testing[j:50+j])
 		# Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
 
 	accuracy = (Rcount/float(193*20))*100
