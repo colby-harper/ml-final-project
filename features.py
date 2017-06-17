@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing, cross_validation, svm, tree
 from sklearn.linear_model import LinearRegression
 import math
+import time
 #np.set_printoptions(threshold=np.nan)
 
 def categorize(percent_change):
@@ -14,6 +15,7 @@ def categorize(percent_change):
 		stock_category = 1
 	else:
 		stock_category = 2
+	print "category: {}".format(stock_category)
 	return stock_category
 
 
@@ -46,56 +48,24 @@ def analysis(df):
 	y_cat = categorize(y_per)
 
 	X = preprocessing.scale(X)
-	cat = np.array(df[:,-2])
 
-	#cat = np.swapaxes(cat,0,1)
-	#X = np.append(X, cat, 1)
-	#print X
 	test_size = int(.2 * X.shape[0])
-	#train_size = X.shape[0] - test_size
-	# print (test_size)
+
 	X_train = X[:-(test_size),:]
 	X_test = X[-(test_size):,:]
-	
-	y_train = y[:-(test_size)]
-	y_test = y[-(test_size):]
-	# print (y)
-	# print(X_train.shape[0])
-	# print(X_test.shape[0])
 
-	# print(y_train.shape[0])
-	# print(y_test.shape[0])
-	# #print(X)
-	#print(X_train)
-	#print(X_test)
-
-	#X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=.1)
-
-	#train_cat = np.array(X_train[:,-1])
-	#X_train =np.delete(X_train, -1, axis=1)
-	test_cat = np.array(X_test[:,-1])
-	#X_test = np.delete(X_test, -1, axis=1)
-	# print X_test
-	# print test_cat
 	X_train = X[:-1,:]
 	X_test = X[-1,:]
 	y_train = y[:-1]
 	y_test = y[-1]
-	train_cat = cat[:-4]
-	test_cat = cat[-4]
 
 	#clf = svm.SVR(kernel = "poly",degree = 3)
 	clf = tree.DecisionTreeRegressor(max_depth=3)
 	clf.fit(X_train,y_train)
 	predictions = clf.predict(X_test)
-	# print (predictions[0])
+
 	count = 0
-	# for i in range(len(predictions)-1):
-	# 	percent_change = ((predictions[i+1] - y_test[i])/y_test[i])*100
-	# 	predicted_cat = categorize(percent_change)
-	# 	if predicted_cat != test_cat[i+1]:
-	# 		#print "prediction: {} Actual: {}".format(predicted_cat, test_cat[i+1])
-	# 		count+=1
+
 
 	percent_change = ((predictions[0] - y_train[-2])/y_train[-2])*100
 	predicted_cat = categorize(percent_change)
@@ -104,25 +74,7 @@ def analysis(df):
 	else:
 		count += 1
 		print ("Right")
-	# print (count)
 
-	#score = clf.score(X_test,y_test)
-	#print (score)
-	#print y_train
-	# print(y_test)
-	# print(predictions)
-	#y_test = preprocessing.normalize(y_test)
-	#predictions = preprocessing.normalize(predictions)
-	#print (y_train)
-
-	#rmse = calculateRMSE(y_test,predictions,y_test.shape[0])
-	#print(y_test)
-	#print(predictions)
-	#print(predictions)
-	#print(rmse)
-
-	#print("X: {},{}".format(X.shape[0],X.shape[1]))
-	#print("y: {}".format(y.shape[0]))#,y.shape[1]))
 	return predictions[0],count
 
 if __name__ == "__main__":
@@ -177,10 +129,10 @@ if __name__ == "__main__":
 		features[k][4] = (vola_diff)/curr_price
 
 		#future price - 6th clumn
-		features[k][6] = data_array[i+2][4]
+		features[k][6] = data_array[i+1][0]
 
 		#Calculate the future percent change - 7th column
-		future_price = data_array[i+2][4]
+		future_price = data_array[i+1][0]
 		trade_price = data_array[i+1][4]
 		#print ("future: {} - trade: {}".format(future_price,trade_price))
 		percent_change = ((future_price - trade_price)/trade_price)*100
@@ -203,10 +155,6 @@ if __name__ == "__main__":
 	features = np.delete(features, -1, axis=0)
 	features = np.delete(features, -1, axis=0)
 
-	# print "buy count: {}".format(BUY)
-	# print "sell count: {}".format(SELL)
-	# print "hold count: {}".format(HOLD)
-
 	increment = 274
 	Rcount_total = 0
 	days = np.arange(20)
@@ -222,12 +170,9 @@ if __name__ == "__main__":
 			 stock_prediction[j],count = analysis(testing[j:50+j])
 			 Rcount += count
 			 Rcount_total += count
-			 # actual_output[i] = testing[i:50+i][6]
 		predictions_array = np.vstack((predictions_array,stock_prediction))
 		accuracy[i] = (Rcount/float(20))*100
-		#print ("{}%".format(accuracy))
 		plt.figure()
-		#plt.subplot(4,4,i+1)
 		plt.plot(days, stock_prediction, 'b', label='predicted')
 		plt.plot(days, actual_output, 'r', label="actual")
 		plt.legend(loc='upper left')
@@ -241,12 +186,4 @@ if __name__ == "__main__":
 	plt.show()
 
 
-	#predictions_array = np.delete(predictions_array, 0, axis=0)
-	#print (predictions_array)	 
-		# Rcount += analysis(features[((i*increment)+124):increment*(i+1)])
 
-	
-	# print "# of buys: {}".format(buy_count)
-	# print "# of sells: {}".format(sell_count)
-	# print "# of holds: {}".format(hold_count)
-	#print (features)
